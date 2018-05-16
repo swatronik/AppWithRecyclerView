@@ -11,6 +11,9 @@ import android.support.v7.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.realm.Realm;
+import io.realm.RealmResults;
+
 public class MainActivity extends AppCompatActivity {
 
     Button btnAdd;
@@ -30,6 +33,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Realm.init(this);
+        Realm realm = Realm.getDefaultInstance();
+        RealmResults<TextRealm> stores = realm.where(TextRealm.class).findAll();
+        for (TextRealm tr: stores) {
+            mass.add(tr.getText());
+        }
+        RecyclerView rv = (RecyclerView)findViewById(R.id.recicledview);
+
+        MyAdapter ma = new MyAdapter(mass);
+        rv.setAdapter(ma);
+
+        RecyclerView.LayoutManager lm = new LinearLayoutManager(this);
+        rv.setLayoutManager(lm);
 
     }
     public void ClickButton(View v) {
@@ -42,6 +58,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (data == null) {return;}
         String text = data.getStringExtra("text");
+
+        TextRealm tr = new TextRealm();
+
+        tr.setText(text);
+
+        Realm.init(this);
+        Realm realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+        realm.copyToRealm(tr);
+        realm.commitTransaction();
 
         mass.add(text);
 
